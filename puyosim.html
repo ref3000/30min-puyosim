@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>puyosim!!!</title>
+  </head>
+  <body>
+    <canvas width="60" height="120" style="height: 96vh"></canvas>
+    <script>
+      var context = document.querySelector("canvas").getContext("2d");
+
+      var field = [
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 1],
+        [1, 2, 3, 1, 4, 1],
+        [1, 1, 2, 3, 3, 3],
+        [2, 2, 3, 4, 4, 4]
+      ];
+
+      drawField();
+
+      function drawField() {
+        for (var row = 0; row < 12; row++) {
+          for (var col = 0; col < 6; col++) {
+            context.fillStyle = "black";
+            if (field[row][col] == 1) context.fillStyle = "red";
+            if (field[row][col] == 2) context.fillStyle = "green";
+            if (field[row][col] == 3) context.fillStyle = "blue";
+            if (field[row][col] == 4) context.fillStyle = "yellow";
+            context.fillRect(col * 10, row * 10, 10, 10);
+          }
+        }
+      }
+
+      function setPuyo(x, y, puyo) {
+        if (x < 1 || x > 6 || y < 1 || y > 12) return;
+        field[12 - y][x - 1] = puyo;
+        drawField();
+      }
+
+      function getPuyo(x, y) {
+        if (x < 1 || x > 6 || y < 1 || y > 12) return -1;
+        return field[12 - y][x - 1];
+      }
+
+      function eraseConnection(x, y) {
+        var puyo = getPuyo(x, y);
+        if (puyo < 1) return;
+        setPuyo(x, y, 0);
+        if (getPuyo(x, y + 1) == puyo) eraseConnection(x, y + 1);
+        if (getPuyo(x, y - 1) == puyo) eraseConnection(x, y - 1);
+        if (getPuyo(x + 1, y) == puyo) eraseConnection(x + 1, y);
+        if (getPuyo(x - 1, y) == puyo) eraseConnection(x - 1, y);
+      }
+
+      var set = new Set();
+      function countConnection(x, y) {
+        set = new Set();
+        return _countConnection(x, y);
+      }
+
+      function _countConnection(x, y) {
+        var puyo = getPuyo(x, y);
+        if (puyo < 1 || set.has(y * 10 + x)) return 0;
+        set.add(y * 10 + x);
+        var count = 1;
+        if (getPuyo(x, y + 1) == puyo) count += _countConnection(x, y + 1);
+        if (getPuyo(x, y - 1) == puyo) count += _countConnection(x, y - 1);
+        if (getPuyo(x + 1, y) == puyo) count += _countConnection(x + 1, y);
+        if (getPuyo(x - 1, y) == puyo) count += _countConnection(x - 1, y);
+        return count;
+      }
+
+      function castOwanimo() {
+        for (var y = 1; y <= 12; y++) {
+          for (var x = 1; x <= 6; x++) {
+            if (countConnection(x, y) >= 4) eraseConnection(x, y);
+          }
+        }
+      }
+
+      function fallPuyo() {
+        for (var y = 1; y <= 12; y++) {
+          for (var x = 1; x <= 6; x++) {
+            if (getPuyo(x, y - 1) == 0) {
+              setPuyo(x, y - 1, getPuyo(x, y));
+              setPuyo(x, y, 0);
+            }
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
